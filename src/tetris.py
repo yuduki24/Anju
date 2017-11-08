@@ -1,6 +1,7 @@
 import pygame
 from pygame.locals import *
 from loader import load_image, load_font, split_image
+from tetrimino import *
 import os
 import sys
 import random
@@ -10,9 +11,6 @@ CELL_SIZE = 20
 WINDOW_ROW = SCR_RECT.height // CELL_SIZE   # フィールドの行数
 WINDOW_COL = SCR_RECT.width // CELL_SIZE  # フィールドの列数
 
-TETORIMINO_T = ((0, 0, 0), \
-                (0, 1, 0), \
-                (1, 1, 1),)
 class Tetris:
     def __init__(self):
         pygame.init()
@@ -35,9 +33,10 @@ class Tetris:
         self.all = pygame.sprite.RenderUpdates()
         #Tetrimino.containers = self.all
         TetriminoBlock.containers = self.all
+        TetriminoBlock.tetrimino_img = self.tetrimino_img
         # デバッグ用.7種類置く
-        for x in range(1):
-            Tetrimino((40 + SCR_RECT.left + (4 * x)), 60, self.tetrimino_img[x])
+        for color in range(7):
+            Tetrimino(40+(5 * color * CELL_SIZE), 60, color)
 
     def update(self):
         """ゲーム状態の更新"""
@@ -67,18 +66,19 @@ class Tetris:
 
 class Tetrimino():
     """テトリミノ"""
-    def __init__(self, x, y, image):
-        for i in range(len(TETORIMINO_T)):
-            for j in range(len(TETORIMINO_T[i])):
-                print(TETORIMINO_T[i][j])
-                if TETORIMINO_T[i][j] == 1:
-                    TetriminoBlock( (y+CELL_SIZE*j), (x+CELL_SIZE*i), image)
+    TETRIMINO_PATTERN = (TETRIMINO_T, TETRIMINO_L, TETRIMINO_J, TETRIMINO_S, TETRIMINO_Z, TETRIMINO_I, TETRIMINO_O)
+    def __init__(self, x, y, color):
+        for i in range(len(self.TETRIMINO_PATTERN[color])):
+            for j in range(len(self.TETRIMINO_PATTERN[color])):
+                print(self.TETRIMINO_PATTERN[color][i][j])
+                if self.TETRIMINO_PATTERN[color][i][j] == 1:
+                    TetriminoBlock((x+CELL_SIZE*j), (y+CELL_SIZE*i), color)
 
 class TetriminoBlock(pygame.sprite.Sprite):
     """テトリミノを構成する一つ一つのブロック"""
-    def __init__(self, x, y, image):
+    def __init__(self, x, y, color):
         pygame.sprite.Sprite.__init__(self, self.containers)
-        self.image = image
+        self.image = self.tetrimino_img[color]
         self.rect = self.image.get_rect()
         self.rect.left = x
         self.rect.top = y
