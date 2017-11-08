@@ -31,10 +31,10 @@ class Tetris:
     def init_game(self):
         """ゲームオブジェクトの初期化"""
         self.all = pygame.sprite.RenderUpdates()
-        Tetromino.containers = self.all
+        Tetrimino.containers = self.all
 
         for x in range(0, 7):
-            Tetromino(x, self.tetromino_img[x])
+            Tetrimino(x, self.tetrimino_img[x])
 
     def update(self):
         """ゲーム状態の更新"""
@@ -54,10 +54,10 @@ class Tetris:
     
     def load_images(self):
         """イメージのロード"""
-        self.tetromino_img = split_image(load_image("tetromino.png"), 7)
+        self.tetrimino_img = split_image(load_image("tetrimino.png"), 7)
 
-class Tetromino(pygame.sprite.Sprite):
-    """テトロミノ"""
+class Tetrimino(pygame.sprite.Sprite):
+    """テトリミノ"""
     def __init__(self, x, image):
         pygame.sprite.Sprite.__init__(self, self.containers)
         self.image = image
