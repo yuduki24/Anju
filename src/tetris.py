@@ -78,7 +78,7 @@ class Tetris:
         self.wall_img = load_image("wall.png")
 
 class Tetrimino():
-    TETRIMINO_PATTERN = (TETRIMINO_T, TETRIMINO_L, TETRIMINO_J, TETRIMINO_S, TETRIMINO_Z, TETRIMINO_I, TETRIMINO_O)
+    TETRIMINO_PATTERN = (TETRIMINO_T, TETRIMINO_L, TETRIMINO_J, TETRIMINO_Z, TETRIMINO_S, TETRIMINO_I, TETRIMINO_O)
     def __init__(self, x, y, color):
         # patternは長方形.
         self.pattern = self.TETRIMINO_PATTERN[color]
