@@ -8,16 +8,19 @@ import random
 
 SCR_RECT = Rect(0, 0, 900, 600)
 CELL_SIZE = 20
-WINDOW_ROW = SCR_RECT.height // CELL_SIZE   # フィールドの行数
-WINDOW_COL = SCR_RECT.width // CELL_SIZE  # フィールドの列数
-
+WINDOW_ROW = SCR_RECT.height // CELL_SIZE
+WINDOW_COL = SCR_RECT.width // CELL_SIZE
+FIELD_ROW = 20
+FIELD_COL = 10
+FIELD_TOP = 80
+FIELD_LEFT = 80
 class Tetris:
     def __init__(self):
         pygame.init()
         screen = pygame.display.set_mode(SCR_RECT.size)
         pygame.display.set_caption(u"Tetris")
         self.load_images()
-        self.init_game()
+        self.init_game(screen)
 
         # メインループ開始
         clock = pygame.time.Clock()
@@ -28,12 +31,16 @@ class Tetris:
             pygame.display.update()
             self.key_handler()
 
-    def init_game(self):
+    def init_game(self, screen):
         """ゲームオブジェクトの初期化"""
         self.all = pygame.sprite.RenderUpdates()
-        #Tetrimino.containers = self.all
-        TetriminoBlock.containers = self.all
-        TetriminoBlock.tetrimino_img = self.tetrimino_img
+        Block.containers = self.all
+
+        Tetrimino.tetrimino_img = self.tetrimino_img
+        Field.image = self.wall_img
+        Field.screen = screen
+        
+        Field()
         # デバッグ用.7種類置く
         for color in range(7):
             Tetrimino(40+(5 * color * CELL_SIZE), 60, color)
@@ -63,25 +70,55 @@ class Tetris:
     def load_images(self):
         """イメージのロード"""
         self.tetrimino_img = split_image(load_image("tetrimino.png"), 7)
+        self.wall_img = load_image("wall.png")
 
 class Tetrimino():
-    """テトリミノ"""
     TETRIMINO_PATTERN = (TETRIMINO_T, TETRIMINO_L, TETRIMINO_J, TETRIMINO_S, TETRIMINO_Z, TETRIMINO_I, TETRIMINO_O)
     def __init__(self, x, y, color):
         for i in range(len(self.TETRIMINO_PATTERN[color])):
             for j in range(len(self.TETRIMINO_PATTERN[color])):
-                print(self.TETRIMINO_PATTERN[color][i][j])
                 if self.TETRIMINO_PATTERN[color][i][j] == 1:
-                    TetriminoBlock((x+CELL_SIZE*j), (y+CELL_SIZE*i), color)
+                    Block((x+CELL_SIZE*j), (y+CELL_SIZE*i), self.tetrimino_img[color])
 
-class TetriminoBlock(pygame.sprite.Sprite):
-    """テトリミノを構成する一つ一つのブロック"""
-    def __init__(self, x, y, color):
+class Block(pygame.sprite.Sprite):
+    def __init__(self, x, y, image):
         pygame.sprite.Sprite.__init__(self, self.containers)
-        self.image = self.tetrimino_img[color]
+        self.image = image
         self.rect = self.image.get_rect()
         self.rect.left = x
         self.rect.top = y
+
+class Field():
+    def __init__(self):
+        # 描画用と実際にブロックを置く用の2つ用意.
+        # 周りの壁用に+2する.
+        self.image_field = [[0 for i in range(FIELD_COL+2)] for j in range(FIELD_ROW+2)]
+        self.block_field = self.image_field[:][:]
+
+        # 両端を埋める.
+        for row in range(FIELD_ROW+2):
+            self.image_field[row][0] = -1
+            self.image_field[row][FIELD_COL+1] = -1
+            self.block_field[row][0] = -1
+            self.block_field[row][FIELD_COL+1] = -1
+        # 底を埋める.
+        # image_fieldは天井も埋める.
+        for col in range(FIELD_COL+2):
+            self.image_field[FIELD_ROW+1][col] = -1
+            self.image_field[0][col] = -1
+            self.block_field[FIELD_ROW+1][col] = -1
+
+        for y in range(FIELD_ROW+2):
+            for x in range(FIELD_COL+2):
+                if self.image_field[y][x] == -1:
+                     self.block_field[y][x] = Block(x*CELL_SIZE+FIELD_TOP,  y*CELL_SIZE+FIELD_LEFT, self.image) 
+
+    def update(self):
+        for y in range(FIELD_ROW):
+            for x in range(FIELD_COL):
+                if [image_field][y][x] == -1:
+                     #self.screen.blit(self.image, (x*CELL_SIZE+FIELD_TOP,  y*CELL_SIZE+FIELD_LEFT))
+                     self.screen.blit(self.image, (x*CELL_SIZE,  y*CELL_SIZE))
 
 if __name__ == "__main__":
     Tetris()
