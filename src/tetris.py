@@ -14,6 +14,7 @@ FIELD_ROW = 20
 FIELD_COL = 10
 FIELD_TOP = 80
 FIELD_LEFT = 80
+LEFT, RIGHT = -1, 1
 class Tetris:
     def __init__(self):
         pygame.init()
@@ -41,9 +42,10 @@ class Tetris:
         Field.screen = screen
         
         Field()
+        self.acctive_tetriminos = []
         # デバッグ用.7種類置く
         for color in range(7):
-            Tetrimino(40+(5 * color * CELL_SIZE), 60, color)
+            self.acctive_tetriminos.append(Tetrimino(40+(5 * color * CELL_SIZE), 60, color))
 
     def update(self):
         """ゲーム状態の更新"""
@@ -66,6 +68,9 @@ class Tetris:
             if event.type == QUIT:
                 pygame.quit()
                 sys.exit()
+            elif event.type == KEYDOWN and event.key == K_SPACE:
+                for n in range(7):
+                    self.acctive_tetriminos[n].spin(RIGHT)
     
     def load_images(self):
         """イメージのロード"""
@@ -75,16 +80,50 @@ class Tetris:
 class Tetrimino():
     TETRIMINO_PATTERN = (TETRIMINO_T, TETRIMINO_L, TETRIMINO_J, TETRIMINO_S, TETRIMINO_Z, TETRIMINO_I, TETRIMINO_O)
     def __init__(self, x, y, color):
-        for i in range(len(self.TETRIMINO_PATTERN[color])):
-            for j in range(len(self.TETRIMINO_PATTERN[color])):
-                if self.TETRIMINO_PATTERN[color][i][j] == 1:
-                    Block((x+CELL_SIZE*j), (y+CELL_SIZE*i), self.tetrimino_img[color])
+        # patternは長方形.
+        self.pattern = self.TETRIMINO_PATTERN[color]
+        self.block_row = len(self.pattern)
+        self.block_col = len(self.pattern[0])
+        self.x = x
+        self.y = y
+        self.blocks = []
+        for i in range(self.block_row):
+            for j in range(self.block_col):
+                if self.pattern[i][j] == 1:
+                    self.blocks.append(Block((x+CELL_SIZE*j), (y+CELL_SIZE*i), self.tetrimino_img[color]))
+    def spin(self, direction):
+        next_pattern = [[0 for i in range(self.block_row)] for j in range(self.block_col)]
+        for i in range(self.block_row):
+            for j in range(self.block_col):
+                if direction == RIGHT:
+                    next_pattern[j][self.block_row-1-i] = self.pattern[i][j]
+                elif firection == LEFT:
+                    next_pattern[self.block_col-1-j][i] = self.pattern[i][j]
+
+        # [TODO]next_patternがblock_fieldとかぶっていないか調べる.
+
+        self.pattern = next_pattern
+        self.block_row =len(self.pattern)
+        self.block_col = len(self.pattern[0])
+        self.__update()
+
+    def __update(self):
+        # 無理やり...
+        num = 0
+        for i in range(self.block_row):
+            for j in range(self.block_col):
+                if self.pattern[i][j] == 1:
+                    self.blocks[num].set_position((self.x+CELL_SIZE*j), (self.y+CELL_SIZE*i))
+                    num += 1
 
 class Block(pygame.sprite.Sprite):
     def __init__(self, x, y, image):
         pygame.sprite.Sprite.__init__(self, self.containers)
         self.image = image
         self.rect = self.image.get_rect()
+        self.rect.left = x
+        self.rect.top = y
+    def set_position(self, x, y):
         self.rect.left = x
         self.rect.top = y
 
