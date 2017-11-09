@@ -44,7 +44,7 @@ class Tetris:
         Field()
         self.acctive_tetriminos = []
         # デバッグ用.7種類置く
-        for color in range(7):
+        for color in range(1):
             self.acctive_tetriminos.append(Tetrimino(40+(5 * color * CELL_SIZE), 60, color))
 
     def update(self):
@@ -69,7 +69,7 @@ class Tetris:
                 pygame.quit()
                 sys.exit()
             elif event.type == KEYDOWN and event.key == K_SPACE:
-                for n in range(7):
+                for n in range(1):
                     self.acctive_tetriminos[n].spin(RIGHT)
     
     def load_images(self):
@@ -78,27 +78,40 @@ class Tetris:
         self.wall_img = load_image("wall.png")
 
 class Tetrimino():
-    TETRIMINO_PATTERN = (TETRIMINO_T, TETRIMINO_L, TETRIMINO_J, TETRIMINO_Z, TETRIMINO_S, TETRIMINO_I, TETRIMINO_O)
+    TETRIMINO_KIND = ((TETRIMINO_T1, TETRIMINO_T2, TETRIMINO_T3, TETRIMINO_T4), \
+                      (TETRIMINO_L1, TETRIMINO_L2, TETRIMINO_L3, TETRIMINO_L4), \
+                      (TETRIMINO_J1, TETRIMINO_J2, TETRIMINO_J3, TETRIMINO_J4), \
+                      (TETRIMINO_Z1, TETRIMINO_Z2), (TETRIMINO_S1, TETRIMINO_S2), \
+                      (TETRIMINO_I1, TETRIMINO_I2), (TETRIMINO_O1) )
     def __init__(self, x, y, color):
-        # patternは長方形.
-        self.pattern = self.TETRIMINO_PATTERN[color]
-        self.block_row = len(self.pattern)
-        self.block_col = len(self.pattern[0])
+        self.PATTERN = self.TETRIMINO_KIND[color]
+        self.PATTERN_COUNT = len(self.PATTERN)
+        self.pattern_number = 0
+        self.current_pattern = self.PATTERN[self.pattern_number]
+        print(self.current_pattern)
+        self.block_row = len(self.current_pattern)
+        self.block_col = len(self.current_pattern[0])
         self.x = x
         self.y = y
         self.blocks = []
         for i in range(self.block_row):
             for j in range(self.block_col):
-                if self.pattern[i][j] == 1:
+                if self.current_pattern[i][j] == 1:
                     self.blocks.append(Block((x+CELL_SIZE*j), (y+CELL_SIZE*i), self.tetrimino_img[color]))
     def spin(self, direction):
-        next_pattern = [[0 for i in range(self.block_row)] for j in range(self.block_col)]
-        for i in range(self.block_row):
-            for j in range(self.block_col):
-                if direction == RIGHT:
-                    next_pattern[j][self.block_row-1-i] = self.pattern[i][j]
-                elif firection == LEFT:
-                    next_pattern[self.block_col-1-j][i] = self.pattern[i][j]
+        # ただただ回転させるコード.
+        # next_pattern = [[0 for i in range(self.block_row)] for j in range(self.block_col)]
+        # for i in range(self.block_row):
+        #     for j in range(self.block_col):
+        #         if direction == RIGHT:
+        #             next_pattern[j][self.block_row-1-i] = self.pattern[i][j]
+        #         elif firection == LEFT:
+        #             next_pattern[self.block_col-1-j][i] = self.pattern[i][j]
+        if direction == RIGHT:
+            self.pattern_number += 1
+        elif firection == LEFT:
+            self.pattern_number -= 1
+        next_pattern = self.pattern[self.pattern_number % self.PATTERN_COUNT]
 
         # [TODO]next_patternがblock_fieldとかぶっていないか調べる.
 
