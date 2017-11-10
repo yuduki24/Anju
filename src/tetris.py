@@ -40,7 +40,7 @@ class Tetris:
         Tetrimino.tetrimino_img = self.tetrimino_img
         Field.image = self.wall_img
         Field.screen = screen
-        
+
         Field()
         self.acctive_tetriminos = []
         # デバッグ用.7種類置く
@@ -71,7 +71,12 @@ class Tetris:
             elif event.type == KEYDOWN and event.key == K_SPACE:
                 for n in range(7):
                     self.acctive_tetriminos[n].spin(RIGHT)
-    
+            elif event.type == KEYDOWN and event.key == K_RIGHT:
+                for n in range(7):
+                    self.acctive_tetriminos[n].move(RIGHT)
+            elif event.type == KEYDOWN and event.key == K_LEFT:
+                for n in range(7):
+                    self.acctive_tetriminos[n].move(LEFT)
     def load_images(self):
         """イメージのロード"""
         self.tetrimino_img = split_image(load_image("tetrimino.png"), 7)
@@ -109,7 +114,7 @@ class Tetrimino():
         #             next_pattern[self.block_col-1-j][i] = self.pattern[i][j]
         if direction == RIGHT:
             self.pattern_number += 1
-        elif firection == LEFT:
+        elif direction == LEFT:
             self.pattern_number -= 1
         next_pattern = self.PATTERN[self.pattern_number % self.PATTERN_COUNT]
 
@@ -118,6 +123,13 @@ class Tetrimino():
         self.current_pattern = next_pattern
         self.block_row = len(self.current_pattern)
         self.block_col = len(self.current_pattern[0])
+        self.__update()
+
+    def move(self, direction):
+        if direction == RIGHT:
+            self.x += CELL_SIZE
+        elif direction == LEFT:
+            self.x -= CELL_SIZE
         self.__update()
 
     def __update(self):
@@ -163,7 +175,7 @@ class Field():
         for y in range(FIELD_ROW+2):
             for x in range(FIELD_COL+2):
                 if self.image_field[y][x] == -1:
-                     self.block_field[y][x] = Block(x*CELL_SIZE+FIELD_TOP,  y*CELL_SIZE+FIELD_LEFT, self.image) 
+                     self.block_field[y][x] = Block(x*CELL_SIZE+FIELD_TOP,  y*CELL_SIZE+FIELD_LEFT, self.image)
 
     def update(self):
         for y in range(FIELD_ROW):
