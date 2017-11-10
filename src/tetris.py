@@ -44,7 +44,7 @@ class Tetris:
         Field()
         self.acctive_tetriminos = []
         # デバッグ用.7種類置く
-        for color in range(1):
+        for color in range(7):
             self.acctive_tetriminos.append(Tetrimino(40+(5 * color * CELL_SIZE), 60, color))
 
     def update(self):
@@ -69,7 +69,7 @@ class Tetris:
                 pygame.quit()
                 sys.exit()
             elif event.type == KEYDOWN and event.key == K_SPACE:
-                for n in range(1):
+                for n in range(7):
                     self.acctive_tetriminos[n].spin(RIGHT)
     
     def load_images(self):
@@ -82,7 +82,7 @@ class Tetrimino():
                       (TETRIMINO_L1, TETRIMINO_L2, TETRIMINO_L3, TETRIMINO_L4), \
                       (TETRIMINO_J1, TETRIMINO_J2, TETRIMINO_J3, TETRIMINO_J4), \
                       (TETRIMINO_Z1, TETRIMINO_Z2), (TETRIMINO_S1, TETRIMINO_S2), \
-                      (TETRIMINO_I1, TETRIMINO_I2), (TETRIMINO_O1) )
+                      (TETRIMINO_I1, TETRIMINO_I2), (TETRIMINO_O1, ) )
     def __init__(self, x, y, color):
         self.PATTERN = self.TETRIMINO_KIND[color]
         self.PATTERN_COUNT = len(self.PATTERN)
@@ -111,13 +111,13 @@ class Tetrimino():
             self.pattern_number += 1
         elif firection == LEFT:
             self.pattern_number -= 1
-        next_pattern = self.pattern[self.pattern_number % self.PATTERN_COUNT]
+        next_pattern = self.PATTERN[self.pattern_number % self.PATTERN_COUNT]
 
         # [TODO]next_patternがblock_fieldとかぶっていないか調べる.
 
-        self.pattern = next_pattern
-        self.block_row =len(self.pattern)
-        self.block_col = len(self.pattern[0])
+        self.current_pattern = next_pattern
+        self.block_row = len(self.current_pattern)
+        self.block_col = len(self.current_pattern[0])
         self.__update()
 
     def __update(self):
@@ -125,7 +125,7 @@ class Tetrimino():
         num = 0
         for i in range(self.block_row):
             for j in range(self.block_col):
-                if self.pattern[i][j] == 1:
+                if self.current_pattern[i][j] == 1:
                     self.blocks[num].set_position((self.x+CELL_SIZE*j), (self.y+CELL_SIZE*i))
                     num += 1
 
