@@ -27,8 +27,9 @@ TETRIMINO_KIND = ((TETRIMINO_T1, TETRIMINO_T2, TETRIMINO_T3, TETRIMINO_T4), \
                       (TETRIMINO_I1, TETRIMINO_I2), (TETRIMINO_O1, ) )
 TETRIMINO_TYPE = {0:"T", 1:"L", 2:"J", 3:"Z", 4:"S", 5:"I", 6:"O"}
 
-PLAY, END = 0, 1
+PLAY, END, CLEAR = 0, 1, 2
 GameStatus = PLAY
+NORMA = 40
 class Tetris:
     def __init__(self):
         pygame.init()
@@ -48,7 +49,13 @@ class Tetris:
                 screen.blit(title, ((SCR_RECT.width-title.get_width())/2, 200))
                 time = title_font.render(str(self.result), False, (0,234,234))
                 screen.blit(time, ((SCR_RECT.width-title.get_width())/2, 350))
-
+            if GameStatus == CLEAR:
+                screen.fill((200, 110, 10))
+                title_font = pygame.font.SysFont(None, 100)
+                title = title_font.render("clear!!!", False, (0,234,234))
+                screen.blit(title, ((SCR_RECT.width-title.get_width())/2, 200))
+                time = title_font.render(str(self.result), False, (0,234,234))
+                screen.blit(time, ((SCR_RECT.width-title.get_width())/2, 350))
             elif GameStatus == PLAY:
                 self.update()
                 self.draw(screen)
@@ -108,9 +115,11 @@ class Tetris:
         self.draw_grid(screen)
         self.nextsDraw()
         self.result = time.time() - self.stime
-        title_font = pygame.font.SysFont(None, 100)
+        title_font = pygame.font.SysFont(None, 50)
         title = title_font.render(str(self.result), False, (0,234,234))
-        screen.blit(title, ((SCR_RECT.width-title.get_width())/2, 200))
+        screen.blit(title, (400, 200))
+        norma = title_font.render(str(NORMA), False, (0,234,234))
+        screen.blit(norma, (400, 350))
 
     def draw_grid(self, screen):
         """グリッドの描画(主にデバッグ用)"""
@@ -260,6 +269,10 @@ class Field():
                     print(y+1, x+1)
                     self.block_field[y+1][x+1].kill()
                 self.underShift(y)
+                global GameStatus, NORMA
+                NORMA -= 1
+                if NORMA == 0 :
+                    GameStatus = CLEAR
 
     def printField(self):
         for row in range(FIELD_ROW):
