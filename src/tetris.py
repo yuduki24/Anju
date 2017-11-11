@@ -45,7 +45,7 @@ class Tetris:
         self.debug_count = 1
         # デバッグ用.7種類置く
         for color in range(self.debug_count):
-            self.acctive_tetriminos.append(Tetrimino(color))
+            self.acctive_tetriminos.append(Tetrimino(color, self.field1))
 
     def update(self):
         """ゲーム状態の更新"""
@@ -88,7 +88,8 @@ class Tetrimino():
                       (TETRIMINO_J1, TETRIMINO_J2, TETRIMINO_J3, TETRIMINO_J4), \
                       (TETRIMINO_Z1, TETRIMINO_Z2), (TETRIMINO_S1, TETRIMINO_S2), \
                       (TETRIMINO_I1, TETRIMINO_I2), (TETRIMINO_O1, ) )
-    def __init__(self, color):
+    TETRIMINO_TYPE = {0:"T", 1:"L", 2:"J", 3:"Z", 4:"S", 5:"I", 6:"O"}
+    def __init__(self, color, field):
         self.PATTERN = self.TETRIMINO_KIND[color]
         self.PATTERN_COUNT = len(self.PATTERN)
         self.pattern_number = 0
@@ -96,12 +97,20 @@ class Tetrimino():
         print(self.current_pattern)
         self.block_row = len(self.current_pattern)
         self.block_col = len(self.current_pattern[0])
-        self.x, self.y = 3, 0
+        self.x, self.y = self.getFastPosition(self.TETRIMINO_TYPE[color], field)
         self.blocks = []
         for i in range(self.block_row):
             for j in range(self.block_col):
                 if self.current_pattern[i][j] == 1:
                     self.blocks.append(Block((self.x+j), (self.y+i), self.tetrimino_img[color]))
+    def getFastPosition(self, teto_type, field):
+        if teto_type in {"T", "L", "J", "Z", "S", "I"}:
+            x, y = 4, 0
+        elif teto_type == "O":
+            x, y = 3, 0
+        else:
+            x, y = 0, 0
+        return x + field.LEFT, y + field.TOP
     def spin(self, direction):
         # ただただ回転させるコード.
         # next_pattern = [[0 for i in range(self.block_row)] for j in range(self.block_col)]
