@@ -132,9 +132,9 @@ class Tetris:
             if event.type == QUIT:
                 pygame.quit()
                 sys.exit()
-            elif event.type == KEYDOWN and event.key == K_x:
+            elif event.type == KEYDOWN and event.key == K_UP:
                 self.acctive_tetrimino.spin(LEFT)
-            elif event.type == KEYDOWN and event.key == K_c:
+            elif event.type == KEYDOWN and event.key == K_DOWN:
                 self.acctive_tetrimino.spin(RIGHT)
             elif event.type == KEYDOWN and event.key == K_RIGHT:
                 self.acctive_tetrimino.move(RIGHT)
