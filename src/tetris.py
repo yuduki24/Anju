@@ -38,15 +38,14 @@ class Tetris:
         Block.containers = self.all
 
         Tetrimino.tetrimino_img = self.tetrimino_img
-        Field.image = self.wall_img
+        Field.wall_img = self.wall_img
+        Field.tetrimino_img = self.tetrimino_img
         Field.screen = screen
 
         self.field1 = Field(4, 4)
-        self.acctive_tetriminos = []
-        self.debug_count = 1
-        # デバッグ用.7種類置く
-        for color in range(self.debug_count):
-            self.acctive_tetriminos.append(Tetrimino(color, self.field1))
+
+        color = random.randint(0,6)
+        self.acctive_tetrimino = Tetrimino(color, self.field1)
 
     def update(self):
         """ゲーム状態の更新"""
@@ -71,17 +70,15 @@ class Tetris:
                 pygame.quit()
                 sys.exit()
             elif event.type == KEYDOWN and event.key == K_SPACE:
-                for n in range(self.debug_count):
-                    self.acctive_tetriminos[n].spin(RIGHT)
+                self.acctive_tetrimino.spin(RIGHT)
             elif event.type == KEYDOWN and event.key == K_RIGHT:
-                for n in range(self.debug_count):
-                    self.acctive_tetriminos[n].move(RIGHT)
+                self.acctive_tetrimino.move(RIGHT)
             elif event.type == KEYDOWN and event.key == K_LEFT:
-                for n in range(self.debug_count):
-                    self.acctive_tetriminos[n].move(LEFT)
+                self.acctive_tetrimino.move(LEFT)
             elif event.type == KEYDOWN and event.key == K_RETURN:
-                for n in range(self.debug_count):
-                    self.acctive_tetriminos[n].fixPosition()
+                self.acctive_tetrimino.fixPosition()
+                color = random.randint(0,6)
+                self.acctive_tetrimino = Tetrimino(color, self.field1)
     def load_images(self):
         """イメージのロード"""
         self.tetrimino_img = split_image(load_image("tetrimino.png"), 7)
@@ -103,6 +100,7 @@ class Tetrimino():
         self.block_row = len(self.current_pattern)
         self.block_col = len(self.current_pattern[0])
         self.x, self.y = self.getFastPosition(self.TETRIMINO_TYPE[color])
+        self.color = color
         self.blocks = []
         for i in range(self.block_row):
             for j in range(self.block_col):
@@ -110,11 +108,11 @@ class Tetrimino():
                     self.blocks.append(Block((self.x+j+self.field.LEFT), (self.y+i+self.field.TOP), self.tetrimino_img[color]))
     def getFastPosition(self, teto_type):
         if teto_type in {"T", "L", "J", "Z", "S", "I"}:
-            return 4, 0
+            return 5, 0
         elif teto_type == "O":
-            return 3, 0
+            return 4, 0
         else:
-            return 0, 0
+            return 1, 0
     def spin(self, direction):
         # ただただ回転させるコード.
         # next_pattern = [[0 for i in range(self.block_row)] for j in range(self.block_col)]
@@ -126,15 +124,14 @@ class Tetrimino():
         #             next_pattern[self.block_col-1-j][i] = self.pattern[i][j]
         next_pattern_number = self.pattern_number
         if direction == RIGHT:
-            next_pattern_number += 1
+            next_pattern_number = self.pattern_number + 1
         elif direction == LEFT:
-            next_pattern_number -= 1
+            next_pattern_number = self.pattern_number - 1
         next_pattern = self.PATTERN[next_pattern_number % self.PATTERN_COUNT]
 
         # [TODO]next_patternがblock_fieldとかぶっていないか調べる.
         if not self.checkMovable(self.x, self.y, next_pattern):
             return
-
         self.current_pattern = next_pattern
         self.pattern_number = next_pattern_number
         self.block_row = len(self.current_pattern)
@@ -151,7 +148,9 @@ class Tetrimino():
         self.__update()
 
     def fixPosition(self):
-        self.field.setTetrimino(self.x, self.y, self.current_pattern)
+        self.field.setTetrimino(self.x, self.y, self.current_pattern, self.blocks[0])
+        for block in self.blocks:
+            block.kill()
     def __update(self):
         # 無理やり...
         num = 0
@@ -199,39 +198,39 @@ class Field():
         for y in range(FIELD_ROW):
             for x in range(FIELD_COL):
                 if self.image_field[y][x] == -1:
-                     Block(x+self.TOP, y+self.LEFT, self.image)
+                    Block(x+self.TOP, y+self.LEFT, self.wall_img)
+                if self.block_field[y][x] == -1:
+                    self.block_field[y][x] = Block(x+self.TOP, y+self.LEFT, self.wall_img)
+        print(self.block_field)
 
     def update(self):
         for y in range(FIELD_ROW):
             for x in range(FIELD_COL):
                 # image_fieldの値に応じて、tetrimino_imgを配置
-                if self.image_field[y][x] == 1 and self.block_field[y][x] == 0:
-                    
-                    #self.screen.blit(self.image, (x*CELL_SIZE+FIELD_TOP,  y*CELL_SIZE+FIELD_LEFT))
-                    #self.screen.blit(self.image, ((x+self,TOP)*CELL_SIZE, (y+self.LEFT)*CELL_SIZE))
-                    self.block_field[y][x] = Block(x+self.TOP, y+self.LEFT, self.image)
+                if self.image_field[y][x] == 0 and self.block_field[y][x] != 0:
+                    self.block_field[y][x] = Block(x+self.TOP, y+self.LEFT, self.block_field[y][x].image)
 
     def checkEmpty(self, x, y, pattern):
         row = len(pattern)
         col = len(pattern[0])
         for i in range(row):
             for j in range(col):
-                if pattern[i][j] == 1 and self.block_field[y+i][x+j] != 0:
-                    return False
+                if pattern[i][j] == 1:
+                    if self.block_field[y+i][x+j] != 0:
+                        print(self.block_field[y+i][x+j], y, i, x, j)
+                        return False
         return True
     
-    def setTetrimino(self, x, y, pattern):
+    def setTetrimino(self, x, y, pattern, block):
         
         while self.checkEmpty(x, y+1, pattern):
-            print("offset")
             y +=1
         row = len(pattern)
         col = len(pattern[0])
         for i in range(row):
             for j in range(col):
                 if pattern[i][j] == 1:
-                    print("set")
-                    self.image_field[y+i][x+j] = 1
+                    self.block_field[y+i][x+j] = block
 
 if __name__ == "__main__":
     Tetris()
