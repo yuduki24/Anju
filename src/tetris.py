@@ -107,13 +107,15 @@ class Tetris:
             if event.type == QUIT:
                 pygame.quit()
                 sys.exit()
-            elif event.type == KEYDOWN and event.key == K_SPACE:
+            elif event.type == KEYDOWN and event.key == K_x:
+                self.acctive_tetrimino.spin(LEFT)
+            elif event.type == KEYDOWN and event.key == K_c:
                 self.acctive_tetrimino.spin(RIGHT)
             elif event.type == KEYDOWN and event.key == K_RIGHT:
                 self.acctive_tetrimino.move(RIGHT)
             elif event.type == KEYDOWN and event.key == K_LEFT:
                 self.acctive_tetrimino.move(LEFT)
-            elif event.type == KEYDOWN and event.key == K_RETURN:
+            elif event.type == KEYDOWN and event.key == K_SPACE:
                 self.acctive_tetrimino.fixPosition()
                 self.nextTetrimino()
     def load_images(self):
