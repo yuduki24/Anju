@@ -12,9 +12,8 @@ WINDOW_ROW = SCR_RECT.height // CELL_SIZE
 WINDOW_COL = SCR_RECT.width // CELL_SIZE
 FIELD_ROW = 20
 FIELD_COL = 10
-FIELD_TOP = 80
-FIELD_LEFT = 80
 LEFT, RIGHT = -1, 1
+
 class Tetris:
     def __init__(self):
         pygame.init()
@@ -173,17 +172,19 @@ class Field():
             self.image_field[0][col] = -1
             self.block_field[FIELD_ROW+1][col] = -1
 
+        # 枠だけは初めに描画.
         for y in range(FIELD_ROW+2):
             for x in range(FIELD_COL+2):
                 if self.image_field[y][x] == -1:
-                     self.block_field[y][x] = Block(x+self.TOP,  y+self.LEFT, self.image)
+                     self.block_field[y][x] = Block(x+self.TOP, y+self.LEFT, self.image)
 
     def update(self):
         for y in range(FIELD_ROW):
             for x in range(FIELD_COL):
+                # image_fieldの値に応じて、tetrimino_imgを配置
                 if [image_field][y][x] == -1:
                      #self.screen.blit(self.image, (x*CELL_SIZE+FIELD_TOP,  y*CELL_SIZE+FIELD_LEFT))
-                     self.screen.blit(self.image, ((x+self,TOP)*CELL_SIZE,  (y+self.LEFT)*CELL_SIZE))
+                     self.screen.blit(self.image, ((x+self,TOP)*CELL_SIZE, (y+self.LEFT)*CELL_SIZE))
 
 if __name__ == "__main__":
     Tetris()
