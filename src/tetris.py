@@ -148,9 +148,8 @@ class Tetrimino():
         self.__update()
 
     def fixPosition(self):
-        self.field.setTetrimino(self.x, self.y, self.current_pattern, self.blocks[0])
-        for block in self.blocks:
-            block.kill()
+        self.field.setTetrimino(self.x, self.y, self.current_pattern, self.blocks)
+
     def __update(self):
         # 無理やり...
         num = 0
@@ -160,8 +159,8 @@ class Tetrimino():
                     self.blocks[num].set_position((self.x+j+self.field.LEFT), (self.y+i+self.field.TOP),)
                     num += 1
     
-    def checkMovable(self, x, y, next_pattern):
-        return self.field.checkEmpty(x, y, next_pattern)
+    def checkMovable(self, x, y, pattern):
+        return self.field.checkEmpty(x, y, pattern)
 
 class Block(pygame.sprite.Sprite):
     def __init__(self, x, y, image):
@@ -177,38 +176,44 @@ class Block(pygame.sprite.Sprite):
 class Field():
     def __init__(self, top, left):
         # 描画用と実際にブロックを置く用の2つ用意.
-        self.image_field = [[0 for i in range(FIELD_COL)] for j in range(FIELD_ROW)]
         self.block_field = [[0 for i in range(FIELD_COL)] for j in range(FIELD_ROW)]
         self.TOP = top
         self.LEFT = left
-        # 両端を埋める.
+        # 枠を埋める.
         for row in range(FIELD_ROW):
-            self.image_field[row][0] = -1
-            self.image_field[row][FIELD_COL-1] = -1
-            self.block_field[row][0] = -1
-            self.block_field[row][FIELD_COL-1] = -1
-        # 底を埋める.
-        # image_fieldは天井も埋める.
-        for col in range(FIELD_COL):
-            self.image_field[FIELD_ROW-1][col] = -1
-            self.image_field[0][col] = -1
-            self.block_field[FIELD_ROW-1][col] = -1
+            self.block_field[row][0] = Block(self.LEFT, self.TOP+row, self.wall_img)
+            self.block_field[row][FIELD_COL-1] = Block(self.LEFT+FIELD_COL-1, self.TOP+row,  self.wall_img)
+            if row == 0:
+                for col in range(FIELD_COL):
+                    # 一番上は描画はするが、フィールドには保存しない.
+                    Block(col+self.LEFT, row+self.TOP, self.wall_img)
+            if row == FIELD_ROW-1:
+                for col in range(FIELD_COL):
+                    self.block_field[row][col] = Block(col+self.LEFT, row+self.TOP, self.wall_img)
 
-        # 枠だけは初めに描画.
-        for y in range(FIELD_ROW):
-            for x in range(FIELD_COL):
-                if self.image_field[y][x] == -1:
-                    Block(x+self.TOP, y+self.LEFT, self.wall_img)
-                if self.block_field[y][x] == -1:
-                    self.block_field[y][x] = Block(x+self.TOP, y+self.LEFT, self.wall_img)
         print(self.block_field)
 
     def update(self):
-        for y in range(FIELD_ROW):
-            for x in range(FIELD_COL):
-                # image_fieldの値に応じて、tetrimino_imgを配置
-                if self.image_field[y][x] == 0 and self.block_field[y][x] != 0:
-                    self.block_field[y][x] = Block(x+self.TOP, y+self.LEFT, self.block_field[y][x].image)
+        #self.drawBlock()
+        self.deleteLine()
+    # 
+    # def drawBlock(self):
+    #     for y in range(FIELD_ROW):
+    #         for x in range(FIELD_COL):
+    #             if self.block_field[y][x] != 0:
+    #                 self.block_field[y][x] = Block(x+self.TOP, y+self.LEFT, )
+
+    def deleteLine(self):
+        for y in range(FIELD_ROW-2):
+            if self.isDelete(self.block_field[y+1]):
+                for x in range(FIELD_COL-2):
+                    self.block_field[y+1][x+1].kill()
+                    
+    def isDelete(self, lines):
+        for n in lines:
+            if n == 0:
+                return False
+        return True
 
     def checkEmpty(self, x, y, pattern):
         row = len(pattern)
@@ -216,13 +221,13 @@ class Field():
         for i in range(row):
             for j in range(col):
                 if pattern[i][j] == 1:
+                    print(self.block_field[y+i][x+j], y, i, x, j)
                     if self.block_field[y+i][x+j] != 0:
-                        print(self.block_field[y+i][x+j], y, i, x, j)
                         return False
         return True
     
-    def setTetrimino(self, x, y, pattern, block):
-        
+    def setTetrimino(self, x, y, pattern, blocks):
+        num = 0
         while self.checkEmpty(x, y+1, pattern):
             y +=1
         row = len(pattern)
@@ -230,7 +235,10 @@ class Field():
         for i in range(row):
             for j in range(col):
                 if pattern[i][j] == 1:
-                    self.block_field[y+i][x+j] = block
+                    blocks[num].set_position(x + j + self.LEFT, y + i + self.TOP)
+                    print(x+i, y+j)
+                    self.block_field[y+i][x+j] = blocks[num]
+                    num += 1
 
 if __name__ == "__main__":
     Tetris()
