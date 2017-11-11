@@ -5,6 +5,7 @@ from tetrimino import *
 import os
 import sys
 import random
+import time
 
 SCR_RECT = Rect(0, 0, 900, 600)
 CELL_SIZE = 20
@@ -45,6 +46,9 @@ class Tetris:
                 title_font = pygame.font.SysFont(None, 100)
                 title = title_font.render("owariWWWWWWW", False, (0,234,234))
                 screen.blit(title, ((SCR_RECT.width-title.get_width())/2, 200))
+                time = title_font.render(str(self.result), False, (0,234,234))
+                screen.blit(time, ((SCR_RECT.width-title.get_width())/2, 350))
+
             elif GameStatus == PLAY:
                 self.update()
                 self.draw(screen)
@@ -62,7 +66,7 @@ class Tetris:
         Field.screen = screen
 
         self.field1 = Field(4, 4)
-
+        self.stime = time.time()
         self.next_next_next = random.randint(0,6)
         self.next_next = random.randint(0,6)
         self.next = random.randint(0,6)
@@ -103,6 +107,10 @@ class Tetris:
         self.all.draw(screen)
         self.draw_grid(screen)
         self.nextsDraw()
+        self.result = time.time() - self.stime
+        title_font = pygame.font.SysFont(None, 100)
+        title = title_font.render(str(self.result), False, (0,234,234))
+        screen.blit(title, ((SCR_RECT.width-title.get_width())/2, 200))
 
     def draw_grid(self, screen):
         """グリッドの描画(主にデバッグ用)"""
