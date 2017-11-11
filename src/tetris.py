@@ -26,6 +26,8 @@ TETRIMINO_KIND = ((TETRIMINO_T1, TETRIMINO_T2, TETRIMINO_T3, TETRIMINO_T4), \
                       (TETRIMINO_I1, TETRIMINO_I2), (TETRIMINO_O1, ) )
 TETRIMINO_TYPE = {0:"T", 1:"L", 2:"J", 3:"Z", 4:"S", 5:"I", 6:"O"}
 
+PLAY, END = 0, 1
+GameStatus = PLAY
 class Tetris:
     def __init__(self):
         pygame.init()
@@ -38,8 +40,14 @@ class Tetris:
         clock = pygame.time.Clock()
         while True:
             clock.tick(60)
-            self.update()
-            self.draw(screen)
+            if GameStatus == END:
+                screen.fill((200, 110, 10))
+                title_font = pygame.font.SysFont(None, 100)
+                title = title_font.render("owariWWWWWWW", False, (0,234,234))
+                screen.blit(title, ((SCR_RECT.width-title.get_width())/2, 200))
+            elif GameStatus == PLAY:
+                self.update()
+                self.draw(screen)
             pygame.display.update()
             self.key_handler()
 
@@ -124,8 +132,7 @@ class Tetris:
         self.wall_img = load_image("wall.png")
 
 class Tetrimino():
-
-    def __init__(self, color, field, x = 4, y = 0):
+    def __init__(self, color, field):
         self.PATTERN = TETRIMINO_KIND[color]
         self.PATTERN_COUNT = len(self.PATTERN)
         self.pattern_number = 0
@@ -133,11 +140,16 @@ class Tetrimino():
         self.field = field
         self.block_row = len(self.current_pattern)
         self.block_col = len(self.current_pattern[0])
-        self.x, self.y = x, y
+        self.x, self.y = 4, 0
         self.color = color
         self.blocks = []
         for i in range(self.block_row):
             for j in range(self.block_col):
+                if not self.checkMovable(self.x, self.y, self.current_pattern):
+                    print("end")
+                    global GameStatus
+                    GameStatus = END
+                    return
                 if self.current_pattern[i][j] == 1:
                     self.blocks.append(Block((self.x+j+self.field.LEFT), (self.y+i+self.field.TOP), self.tetrimino_img[color]))
 
