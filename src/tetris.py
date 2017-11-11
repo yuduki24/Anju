@@ -194,25 +194,44 @@ class Field():
         print(self.block_field)
 
     def update(self):
-        #self.drawBlock()
+        self.drawBlock()
         self.deleteLine()
-    # 
-    # def drawBlock(self):
-    #     for y in range(FIELD_ROW):
-    #         for x in range(FIELD_COL):
-    #             if self.block_field[y][x] != 0:
-    #                 self.block_field[y][x] = Block(x+self.TOP, y+self.LEFT, )
+    
+    def drawBlock(self):
+        for y in range(FIELD_ROW):
+            for x in range(FIELD_COL):
+                if self.block_field[y][x] != 0:
+                    self.block_field[y][x].set_position(x + self.LEFT, y + self.TOP)
 
     def deleteLine(self):
         for y in range(FIELD_ROW-2):
             if self.isDelete(self.block_field[y+1]):
+                print(y+1)
                 for x in range(FIELD_COL-2):
+                    self.printField()
+                    print(y+1, x+1)
                     self.block_field[y+1][x+1].kill()
+                self.underShift(y)
+
+    def printField(self):
+        for row in range(FIELD_ROW):
+            print(self.block_field[row])
                     
-    def isDelete(self, lines):
-        for n in lines:
+    def underShift(self, y):
+        # 一つ下に詰める.
+        while y > 0:
+            for x in range(FIELD_COL-2):
+                self.block_field[y+1][x+1] = self.block_field[y][x+1]
+            y -= 1
+        # 一番上は初期値で埋める.
+        for x in range(FIELD_COL-2):
+            self.block_field[0][x+1] = 0
+
+    def isDelete(self, line):
+        for n in line:
             if n == 0:
                 return False
+        print(line)
         return True
 
     def checkEmpty(self, x, y, pattern):
@@ -235,8 +254,6 @@ class Field():
         for i in range(row):
             for j in range(col):
                 if pattern[i][j] == 1:
-                    blocks[num].set_position(x + j + self.LEFT, y + i + self.TOP)
-                    print(x+i, y+j)
                     self.block_field[y+i][x+j] = blocks[num]
                     num += 1
 
